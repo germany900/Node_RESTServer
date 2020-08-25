@@ -2,9 +2,10 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const User = require('../model/usuario');
+const { verifyToken, verifyRol } = require('../middlewares/autenticacion');
 const app = express();
 
-app.get('/usuario', async(req, res) => {
+app.get('/usuario', verifyToken, async(req, res) => {
 
     let desde = req.query.desde || 0;
     desde = Number(desde);
@@ -30,7 +31,7 @@ app.get('/usuario', async(req, res) => {
         });
   });
   
-  app.post('/usuario', (req, res) => {
+  app.post('/usuario', [verifyToken, verifyRol], async(req, res) => {
       let body = req.body;
 
         let user = new User({
@@ -40,7 +41,7 @@ app.get('/usuario', async(req, res) => {
             role: body.role
         });
 
-        user.save((err, userDB) => {
+        await user.save((err, userDB) => {
             if(err) {
                 return res.status(400).json({
                     err
@@ -61,11 +62,11 @@ app.get('/usuario', async(req, res) => {
       })
   });
   
-  app.put('/usuario/:id', (req, res) => {
+  app.put('/usuario/:id', [verifyToken, verifyRol], async(req, res) => {
       let id = req.params.id;
       let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']);
 
-      User.findByIdAndUpdate(id,
+      await User.findByIdAndUpdate(id,
          body,
           { new: true, runValidators: true },
            (err, userDB) => {
@@ -80,12 +81,12 @@ app.get('/usuario', async(req, res) => {
       });
   });
   
-  app.delete('/usuario/:id', (req, res) => {
+  app.delete('/usuario/:id', [verifyToken, verifyRol], async(req, res) => {
       
         let id = req.params.id;
         let updateState = { estado: false };
 
-        User.findByIdAndUpdate(id,
+        await User.findByIdAndUpdate(id,
             updateState,
              { new: true },
               (err, UserStatus) => {
