@@ -4,6 +4,7 @@ require('./config/config');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const path = require('path');
 const app = express();
 
 
@@ -12,6 +13,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
  
 // parse application/json
 app.use(bodyParser.json());
+
+//Carpeta public
+app.use(express.static(path.resolve(__dirname, '../public')));
 
 // Rutas globales
 app.use(require('./routes/index'));
